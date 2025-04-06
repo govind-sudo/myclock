@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Responsive 3D Clock App</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', sans-serif;
+    }
+
+    body {
+      background: #0d0d0d;
+      overflow-x: hidden;
+      color: #fff;
+    }
+
+    .container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 20px;
+      z-index: 2;
+      position: relative;
+    }
+
+    .clock3d {
+      width: clamp(220px, 40vw, 300px);
+      height: clamp(220px, 40vw, 300px);
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, #1a1a1a, #000);
+      box-shadow:
+        inset -4px -4px 10px rgba(255,255,255,0.1),
+        inset 4px 4px 10px rgba(0,0,0,0.7),
+        0 0 25px rgba(255,255,255,0.05),
+        5px 5px 20px rgba(0,0,0,0.9);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 40px;
+      text-align: center;
+      padding: 20px;
+    }
+
+    .clock3d h1 {
+      font-size: 1.8rem;
+      color: #0ff;
+      text-shadow: 0 0 10px rgba(0,255,255,0.4);
+    }
+
+    .clock3d p {
+      font-size: 1.1rem;
+      margin-top: 10px;
+      color: #ccc;
+      text-shadow: 0 0 6px rgba(255,255,255,0.2);
+    }
+
+    .cards {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 40px;
+      justify-content: center;
+      margin-top: 20px;
+      width: 100%;
+      max-width: 1200px;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 24px;
+      padding: 30px 20px;
+      flex: 1 1 300px;
+      max-width: 360px;
+      backdrop-filter: blur(12px);
+      box-shadow:
+        0 0 8px rgba(255, 255, 255, 0.2),
+        0 0 15px rgba(255, 255, 255, 0.1);
+      transition: all 0.3s ease;
+      transform-style: preserve-3d;
+      text-align: center;
+    }
+
+    .card:hover {
+      transform: scale(1.05) rotateX(5deg) rotateY(5deg);
+      box-shadow:
+        0 0 20px rgba(255, 255, 255, 0.4),
+        0 0 40px rgba(0, 255, 255, 0.1);
+    }
+
+    button, input {
+      margin-top: 12px;
+      padding: 14px;
+      background: #1a1a1a;
+      border: none;
+      border-radius: 12px;
+      color: #fff;
+      width: 100%;
+      font-size: 1rem;
+    }
+
+    h2 {
+      font-size: 1.5rem;
+      margin-bottom: 12px;
+    }
+
+    .bubbles {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      overflow: hidden;
+      pointer-events: none;
+    }
+
+    .bubbles span {
+      position: absolute;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, #222, #000);
+      box-shadow:
+        inset -2px -2px 6px rgba(255,255,255,0.15),
+        inset 2px 2px 8px rgba(0,0,0,0.8),
+        0 0 12px rgba(255,255,255,0.08);
+      animation: float 14s linear infinite;
+      opacity: 0.8;
+    }
+
+    @keyframes float {
+      0% {
+        transform: translateY(100vh) scale(1);
+        opacity: 0.2;
+      }
+      50% {
+        opacity: 1;
+        transform: translateY(50vh) scale(1.3);
+      }
+      100% {
+        transform: translateY(-10vh) scale(1);
+        opacity: 0;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .card {
+        padding: 20px 16px;
+      }
+
+      .clock3d {
+        margin-bottom: 30px;
+      }
+
+      .clock3d h1 {
+        font-size: 1.4rem;
+      }
+
+      .clock3d p {
+        font-size: 1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="bubbles" id="bubbles"></div>
+
+  <div class="container">
+    <!-- Clock -->
+    <div class="clock3d">
+      <h1 id="timeDisplay">--:--:--</h1>
+      <p id="dateDisplay">Loading date...</p>
+    </div>
+
+    <!-- Functional Cards -->
+    <div class="cards">
+      <div class="card">
+        <h2>Stopwatch</h2>
+        <p id="stopwatch">00:00:00</p>
+        <button onclick="startStopwatch()">Start</button>
+        <button onclick="stopStopwatch()">Stop</button>
+        <button onclick="resetStopwatch()">Reset</button>
+      </div>
+
+      <div class="card">
+        <h2>Timer</h2>
+        <input type="number" id="timerInput" placeholder="Seconds" />
+        <p id="timerDisplay">00:00</p>
+        <button onclick="startTimer()">Start</button>
+        <button onclick="resetTimer()">Reset</button>
+      </div>
+
+      <div class="card">
+        <h2>Alarm</h2>
+        <input type="time" id="alarmTime" />
+        <button onclick="setAlarm()">Set Alarm</button>
+        <p id="alarmStatus">No alarm set.</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Clock
+    function updateClock() {
+      const now = new Date();
+      const timeStr = now.toLocaleTimeString();
+      const dateStr = now.toDateString();
+      document.getElementById("timeDisplay").textContent = timeStr;
+      document.getElementById("dateDisplay").textContent = dateStr;
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    // Stopwatch
+    let swInterval, swSeconds = 0;
+    function displayStopwatch() {
+      const hrs = Math.floor(swSeconds / 3600);
+      const mins = Math.floor((swSeconds % 3600) / 60);
+      const secs = swSeconds % 60;
+      document.getElementById('stopwatch').textContent =
+        `${String(hrs).padStart(2,'0')}:${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')}`;
+    }
+    function startStopwatch() {
+      if (swInterval) return;
+      swInterval = setInterval(() => {
+        swSeconds++;
+        displayStopwatch();
+      }, 1000);
+    }
+    function stopStopwatch() {
+      clearInterval(swInterval);
+      swInterval = null;
+    }
+    function resetStopwatch() {
+      stopStopwatch();
+      swSeconds = 0;
+      displayStopwatch();
+    }
+
+    // Timer
+    let timerInterval, timerCount = 0;
+    function startTimer() {
+      const input = parseInt(document.getElementById('timerInput').value);
+      if (isNaN(input) || input <= 0) return alert("Enter valid seconds");
+      timerCount = input;
+      displayTimer();
+      clearInterval(timerInterval);
+      timerInterval = setInterval(() => {
+        timerCount--;
+        displayTimer();
+        if (timerCount <= 0) {
+          clearInterval(timerInterval);
+          alert("⏳ Timer finished!");
+        }
+      }, 1000);
+    }
+    function resetTimer() {
+      clearInterval(timerInterval);
+      timerCount = 0;
+      displayTimer();
+    }
+    function displayTimer() {
+      const mins = Math.floor(timerCount / 60);
+      const secs = timerCount % 60;
+      document.getElementById('timerDisplay').textContent =
+        `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+    }
+
+    // Alarm
+    let alarmTime = null;
+    function setAlarm() {
+      const timeStr = document.getElementById('alarmTime').value;
+      if (!timeStr) return alert("Select a valid time!");
+      alarmTime = timeStr;
+      document.getElementById('alarmStatus').textContent = "Alarm set for " + alarmTime;
+    }
+    setInterval(() => {
+      if (!alarmTime) return;
+      const now = new Date();
+      const current = now.toTimeString().slice(0, 5);
+      if (current === alarmTime) {
+        alert("⏰ Alarm Time!");
+        alarmTime = null;
+        document.getElementById('alarmStatus').textContent = "No alarm set.";
+      }
+    }, 1000);
+
+    // Bubbles
+    const bubbleContainer = document.getElementById('bubbles');
+    for (let i = 0; i < 10; i++) {
+      const span = document.createElement('span');
+      span.style.left = Math.random() * 100 + 'vw';
+      span.style.animationDelay = Math.random() * -14 + 's';
+      span.style.animationDuration = (12 + Math.random() * 4) + 's';
+      bubbleContainer.appendChild(span);
+    }
+  </script>
+</body>
+</html>
